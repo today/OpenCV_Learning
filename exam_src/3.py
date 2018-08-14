@@ -1,12 +1,19 @@
 # coding=utf-8
+#OpenCV 相关
 import cv2
 import numpy as np
+
+#网络相关
+import urllib2
+import json
 
 videos = ["E:\\aa.mp4","E:\\cctv.mp4","E:\\hz.mp4","E:\\tw.mp4","E:\\180.mkv","E:\\ghost.webm"]
 path = videos[0]
 
-#cap = cv2.VideoCapture(path)
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(path)
+#cap = cv2.VideoCapture(0)
+if not cap :
+    exit()
 
 # 新建一个MOG背景减除对象
 fgbg = cv2.createBackgroundSubtractorMOG2()
@@ -19,7 +26,7 @@ while 1:
 
     # print type(frame)
     # print frame.dtype
-    # print frame.shape
+    (width, height, dimensional) = frame.shape
 
     if frame is None:
         cv2.waitKey(0)
@@ -48,13 +55,28 @@ while 1:
             if M["m00"] != 0 :
                 center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
             
-            print center
+            #print center
             # 只处理尺寸足够大的轮廓
             if radius > 40:
                 # 画出最小外接圆
                 cv2.circle(th, (int(x), int(y)), int(radius), (255, 255, 255), 5)
                 # 画出重心
                 cv2.circle(th, center, 5, (0, 0, 255), -1) 
+
+                # 在这里把座标数据发送到服务器。
+                data = {
+                    'x': (y/width),    #640
+                    'y': (x/height),     #480
+                    'p': int(radius)
+                }
+                print width
+                print height
+                print data
+                headers = {'Content-Type': 'application/json'}
+                req_url = "http://192.168.6.97:8000/step/"
+                request = urllib2.Request(url=req_url, headers=headers, data=json.dumps(data))
+                response = urllib2.urlopen(request)
+
 
         # output video
         cv2.imshow('frame', th)
