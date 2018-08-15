@@ -10,8 +10,8 @@ import json
 videos = ["E:\\aa.mp4","E:\\cctv.mp4","E:\\hz.mp4","E:\\tw.mp4","E:\\180.mkv","E:\\ghost.webm"]
 path = videos[0]
 
-cap = cv2.VideoCapture(path)
-#cap = cv2.VideoCapture(0)
+#cap = cv2.VideoCapture(path)
+cap = cv2.VideoCapture(0)
 if not cap :
     exit()
 
