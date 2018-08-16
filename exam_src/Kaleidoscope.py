@@ -86,8 +86,13 @@ def wht( img_original ):
 
 # 新建一个VideoCapture对象，指定第0个相机进行视频捕获
 cap = cv2.VideoCapture(0)
-ret=cap.set(3,480)
-ret=cap.set(4,640)
+ret = cap.set(3,480)
+ret = cap.set(4,640)
+
+# 看来帧率是不能设置的。
+# ret = cap.set(cv2.CAP_PROP_FPS, 20)
+# print( cap.get(cv2.CAP_PROP_FPS))
+
 
 # 一直循环捕获，直到手动退出
 while 1:
