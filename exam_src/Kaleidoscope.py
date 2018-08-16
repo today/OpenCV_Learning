@@ -105,6 +105,9 @@ while 1:
     else:
         # 调用OpenCV图像显示函数显示每一帧
         img_processed  = wht( frame )
+
+        text = str( cap.get(cv2.CAP_PROP_FPS) )
+        cv2.putText(img_processed, text, (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), lineType=cv2.LINE_AA) 
         cv2.imshow("Kaleidoscope", img_processed)
 
         cv2.imshow("Original", frame)
