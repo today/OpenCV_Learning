@@ -1,11 +1,11 @@
 from flask import Flask
 from flask_restful import reqparse, abort, Api, Resource, request
-from flask_cors import *
+#from flask_cors import *
 
 import json
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True)
+#CORS(app, supports_credentials=True)
 
 api = Api(app)
 
@@ -27,7 +27,7 @@ class Steps(Resource):
             STEPS['datas'].pop()
             STEPS['count'] = len(STEPS['datas'])
             #ret.append(  )
-        print(ret)    
+        print(STEPS["count"])    
         # response.headers['Access-Control-Allow-Origin'] = '*'
         # response.headers['Access-Control-Allow-Methods'] = 'OPTIONS,HEAD,GET,POST'
         # response.headers['Access-Control-Allow-Headers'] = 'x-requested-with'    
@@ -43,7 +43,7 @@ class Step(Resource):
             #print(STEPS)
             #print(len(STEPS['datas']))
             STEPS['count'] = len(STEPS['datas'])
-            if STEPS['count'] < 10 :
+            if STEPS['count'] < 3 :
                 STEPS['datas'].append(request.get_json())
             return {'count':len(STEPS['datas'])}
 
