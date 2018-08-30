@@ -11,7 +11,18 @@ import traceback
 import seeeklab as SK
 RET_DATA = SK.getReturnValTemp()
 
-def dropgoods():
+def toTwoHex(num):
+    temp = int(num)
+    ret = ""
+    if temp <= 0:
+        ret = "00"
+    elif temp < 16:
+        ret = "0" + hex(temp)[-1]
+    elif temp < 16:
+        ret = hex(temp)[-2:]   
+    return ret
+
+def dropgoods( equipment_no , goods_count):
     # 创建serial实例
     serialport = serial.Serial()
     serialport.port = 'COM4'
@@ -21,14 +32,26 @@ def dropgoods():
     serialport.stopbits = 1
     serialport.timeout = 0.2
 
-    count = 0
+    print RET_DATA
+    slots = RET_DATA["config"]["equipments"][equipment_no]["slots"]
+    slot_no = 0
+    for i in range( len(slots) ):
+        if slots[i] > 1 :
+            slot_no = i
+            slots[i] -= 1
+            break
 
-    while 1:
+    #判断缺货，设置提示
+    if slot_no > 7 :
+        RET_DATA['run_msg'] += "Goods count too low. "
+        RET_DATA['alm_refill'] = "Please Refill."
+
+    if slot_no > 0:
         serialport.open()
         # 发送数据   
         #s = "0B0B"
-        #起始符0xB1   货道号0x01   打开命令0x01
-        s = "B11001"
+        #起始符0xB1   货道号0x01   打开命令0x01   example:"B11001"
+        s = "B1" + toTwoHex(slot_no) + "01"
 
         d = s.decode('hex')
         serialport.write(d)
@@ -39,12 +62,9 @@ def dropgoods():
         #data1=str((int(data,16)-1000)/10)
         print(data)
         serialport.close()
-
-        count += 1
-        if count > 5:
-            break
-        time.sleep(5)
-
+    else:
+        RET_DATA['run_msg'] += " Sold Out. Can not drop. "
+        RET_DATA['alm_refill'] = " Please Refill."
 
 
 def checkSerial():
@@ -61,7 +81,6 @@ def init():
 
     # 读 config.json 文件，获得配置信息。
     # 获取所有的 json 文件，选最新的一个当作当前配置。
-    
     try:
         configfile = SK.findNewJson()
         config = SK.getConfig(configfile)
@@ -72,12 +91,11 @@ def init():
         RET_DATA['run_msg'] += "An error occurred when open config file."
         RET_DATA['err_msg'] += e.message
         check_ok = False
+        print traceback.format_exc()
     
-
     # 检查所有配置文件中定义的串口是否能正常工作。
     check_ok = check_ok and checkSerial()
     
-
     if check_ok :
         # 通过开机检测，设置要回送的数据。
         RET_DATA['err_no'] = 0
@@ -123,9 +141,13 @@ def main(argv):
 
     init()
 
-    resultFilename = "config/" + SK.getTimeStamp() + ".json"
-    SK.saveJson(resultFilename ,RET_DATA)
+    dropgoods(equipment, goods_count)
+
+    # 把返回数据写入文件，当作日志，以及下次开机的初始配置
+    resultFilename =  SK.getTimeStamp() + ".json"
+    SK.saveJson("config/" + resultFilename ,RET_DATA)
     print RET_DATA
+    return resultFilename
    
 
 if __name__ == "__main__":

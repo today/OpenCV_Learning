@@ -12,7 +12,7 @@ def getReturnValTemp():
 # Writing JSON data
 def saveJson(filename, data ):
     with open(filename, 'w') as f:
-        json.dump(data, f)
+        json.dump(data, f, indent=4)
 
 
 """ TODO 这几个函数的名字和功能需要重构。 """
