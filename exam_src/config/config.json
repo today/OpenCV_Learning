@@ -1,0 +1,9 @@
+{
+"equipments":{
+        "a":{"port":"com4", "slots":[9,9,9,9,9,9,9,9,9,9] },
+        "b":{"port":"com5", "slots":[9,9,9,9,9,9,9,9,9,9] }
+    },
+
+"run_mode":"debug"
+
+}
