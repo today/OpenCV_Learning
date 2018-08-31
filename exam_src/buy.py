@@ -7,6 +7,8 @@ import binascii
 import time 
 import json
 import sys, getopt
+import glob
+import shutil
 import traceback
 
 import seeeklab as SK
@@ -43,12 +45,13 @@ def dropgoods( equipment_no , goods_count):
             slot_no = i+1  # 因为出货槽编号从1开始
             slots[i] -= 1
             break
+    print "i= " + str(i)
 
     #判断缺货，设置提示
     if slot_no == 0 :
         RET_DATA['run_msg'] += " Sold Out. Can not drop. "
         RET_DATA['alm_refill'] = " Please Refill."
-    elif slot_no > 0 and slot_no < 9:
+    elif slot_no > 0 and slot_no < 11:
         try:
             serialport.open()
             # 发送数据   
@@ -118,8 +121,7 @@ def init():
     
     if check_ok :
         # 通过开机检测，设置要回送的数据。
-        RET_DATA['err_no'] = 0
-        RET_DATA['err_msg'] += "Initial OK. "
+        RET_DATA['run_msg'] += "Initial OK. "
         return 0
     else:
         
@@ -128,7 +130,18 @@ def init():
     
 
 def refill():
-    return 0
+    # 从 config 目录删除所有 json 文件
+    dest_dir = "log/"
+    for file in glob.glob(r'config/*.json'):
+        if file.find("config.json") > -1 : continue
+        print(file)
+        shutil.move(file, dest_dir)
+
+    # 从模板目录拷贝 config.json 到 config 目录
+    # shutil.copy("templete/config.json","config/config.json")
+
+    ret = SK.makeMsg(0)
+    return ret
 
 def checkArgv(argv):
     equipment = "1"

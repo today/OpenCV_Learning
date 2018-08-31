@@ -7,7 +7,7 @@ import glob
 from datetime import datetime
 
 def getReturnValTemp():
-    return {'err_no': 1,'err_msg':"Unknown error.","run_msg":"","data":{}}
+    return {'err_no': 0,'err_msg':"","run_msg":"","data":{}}
 
 # Writing JSON data
 def saveJson(filename, data ):
@@ -26,7 +26,23 @@ def getConfig(cfg='config/config.json'):
         config = data
     return config
 
+def makeMsg(id, msgtext=''):
+    ret = getReturnValTemp()
+    # 根据 id 取到 msg 对象
+    ret['run_msg'] += MSG[id]
+    
+    # 检查是否 id 和 text 不匹配
+    return ret
 
+def makeErrMsg(id, msgtext=''):
+    ret = getReturnValTemp()
+    # 根据 id 取到 msg 对象
+    ret['err_no'] = id
+    ret['err_msg'] += MSG[id]
+    
+    # 检查是否 id 和 text 不匹配
+
+    return ret
 
 def getTimeStamp():
     #print datetime.utcnow().strftime('%Y-%m-%d_%H:%M:%S.%f')[:-3]
@@ -52,6 +68,21 @@ def findNewJson(destdir='config'):
         return files[-1]
     else:
         return destdir + "/config.json"
+
+
+MSG = {}
+MSG[0] = "Success."
+MSG[1] = ""
+MSG[10000] = ""
+MSG[10001] = ""
+MSG[10002] = ""
+MSG[10003] = ""
+MSG[10004] = "Invalid Content Type. Request must json."
+
+
+
+
+
 
 
 if __name__ == "__main__":

@@ -54,8 +54,15 @@ class Step(Resource):
                 STEPS['datas'].append(request.get_json())
             return {'count':len(STEPS['datas'])}
 
+class Refill(Resource):
+    def get(self):
+        # if request.content_type != 'application/json':
+        #     ret = SK.makeErrMsg(10004)
+        # else :
+        ret = SellMachine.refill()
+        return ret,200
 
-class dropone(Resource):
+class Dropone(Resource):
     def get(self, machine_no):
         print "Start dropone."
         if False:
@@ -63,21 +70,11 @@ class dropone(Resource):
             return error
         else :
             # 获取参数：售货机编号  machine_no
-
             # 调用外部程序，驱动售货机出货
-
             ret = buy(machine_no)
             print ret
 
-            # 检查返回值，如果出货成功，可以获取到保存售货机状态的文件的文件名。
-            
-
-            # 读文件，构建返回报文，返回成功结果
-            #ret_data = getDropResult(filename)
-
-            # 如果出货失败，构建返回报文，返回失败结果
-
-            return json.dumps(ret),200
+            return ret,200
             #return json.dumps(ret, indent=4),200
 
 
@@ -98,7 +95,8 @@ def buy( machine_no):
 ##
 api.add_resource(Steps, '/steps/')
 api.add_resource(Step, '/step/')
-api.add_resource(dropone, '/dropone/<machine_no>' )
+api.add_resource(Dropone, '/dropone/<machine_no>' )
+api.add_resource(Refill, '/refill' )
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0" ,port=8000)
