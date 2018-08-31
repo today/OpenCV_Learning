@@ -2,6 +2,7 @@
 #-*- coding: utf-8 -*
 
 import serial
+from serial import SerialException
 import binascii
 import time 
 import json
@@ -23,6 +24,8 @@ def toTwoHex(num):
     return ret
 
 def dropgoods( equipment_no , goods_count):
+    init()
+
     # 创建serial实例
     serialport = serial.Serial()
     serialport.port = 'COM4'
@@ -37,41 +40,58 @@ def dropgoods( equipment_no , goods_count):
     slot_no = 0
     for i in range( len(slots) ):
         if slots[i] > 1 :
-            slot_no = i
+            slot_no = i+1  # 因为出货槽编号从1开始
             slots[i] -= 1
             break
 
     #判断缺货，设置提示
-    if slot_no > 7 :
-        RET_DATA['run_msg'] += "Goods count too low. "
-        RET_DATA['alm_refill'] = "Please Refill."
-
-    if slot_no > 0:
-        serialport.open()
-        # 发送数据   
-        #s = "0B0B"
-        #起始符0xB1   货道号0x01   打开命令0x01   example:"B11001"
-        s = "B1" + toTwoHex(slot_no) + "01"
-
-        d = s.decode('hex')
-        serialport.write(d)
-        print (d)
-        # 接收数据  
-        str1 = serialport.read(10)
-        data= binascii.b2a_hex(str1)
-        #data1=str((int(data,16)-1000)/10)
-        print(data)
-        serialport.close()
-    else:
+    if slot_no == 0 :
         RET_DATA['run_msg'] += " Sold Out. Can not drop. "
         RET_DATA['alm_refill'] = " Please Refill."
+    elif slot_no > 0 and slot_no < 9:
+        try:
+            serialport.open()
+            # 发送数据   
+            #s = "0B0B"
+            #起始符0xB1   货道号0x01   打开命令0x01   example:"B11001"
+            s = "B1" + toTwoHex(slot_no) + "01"
+
+            d = s.decode('hex')
+            serialport.write(d)
+            print (d)
+            # 接收数据  
+            str1 = serialport.read(10)
+            data= binascii.b2a_hex(str1)
+            #data1=str((int(data,16)-1000)/10)
+            print(data)
+            serialport.close()
+        except SerialException,e:
+            RET_DATA['err_no'] = 10003
+            RET_DATA['run_msg'] += "An error occurred when open serial port."
+            RET_DATA['err_msg'] += e.message
+
+        if slot_no > 7 :
+            #判断需要补货，设置提示
+            RET_DATA['run_msg'] += "Goods count too low. "
+            RET_DATA['alm_refill'] = "Please Refill."
+    else :
+        #判断需要补货，设置提示
+        RET_DATA['err_no'] = 10000
+        RET_DATA['err_msg'] += "DropGoods programme error. Unknown cause."
+        RET_DATA['run_msg'] += "Please Check programme and equipment."
+
+    # 把数据写入文件，当作日志，以及下次开机的初始配置
+    resultFilename =  SK.getTimeStamp() + ".json"
+    SK.saveJson("config/" + resultFilename ,RET_DATA)
+    
+    return RET_DATA  
 
 
 def checkSerial():
     # 如果不能，构造出错信息。  {'error': 1,'error_msg':"Unknown error.","data":{}}
-    RET_DATA['err_no'] = 10002
-    RET_DATA['err_msg'] = "Serial port error. Can't open."
-    return 0
+    # RET_DATA['err_no'] = 10002
+    # RET_DATA['err_msg'] = "Serial port error. Can't open."
+    return True
 
 def init():
     RET_DATA['err_no'] = 0
@@ -139,15 +159,10 @@ def checkArgv(argv):
 def main(argv):
     equipment, goods_count = checkArgv(argv)
 
-    init()
-
     dropgoods(equipment, goods_count)
 
-    # 把返回数据写入文件，当作日志，以及下次开机的初始配置
-    resultFilename =  SK.getTimeStamp() + ".json"
-    SK.saveJson("config/" + resultFilename ,RET_DATA)
     print RET_DATA
-    return resultFilename
+   
    
 
 if __name__ == "__main__":

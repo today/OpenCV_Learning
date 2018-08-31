@@ -56,4 +56,3 @@ def findNewJson(destdir='config'):
 
 if __name__ == "__main__":
     findNewJson()
-    getTimeStamp()
