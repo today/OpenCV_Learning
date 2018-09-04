@@ -30,7 +30,7 @@ def dropgoods( equipment_no , goods_count):
 
     # 创建serial实例
     serialport = serial.Serial()
-    serialport.port = 'COM4'
+    serialport.port = RET_DATA['config']['equipments'][equipments_no]['port']   # example: 'COM4'
     serialport.baudrate = 9600
     serialport.parity = 'N'
     serialport.bytesize = 8
