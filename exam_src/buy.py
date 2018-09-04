@@ -62,7 +62,7 @@ def dropgoods( equipment_no , goods_count):
 
             d = s.decode('hex')
             serialport.write(d)
-            print (d)
+            # print (d)  这里比较奇怪，在另外一台windows电脑上会报 IOError  。
             # 接收数据  
             str1 = serialport.read(10)
             data= binascii.b2a_hex(str1)
