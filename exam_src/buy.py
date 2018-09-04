@@ -51,6 +51,7 @@ def dropgoods( equipment_no , goods_count):
     if slot_no == 0 :
         RET_DATA['run_msg'] += " Sold Out. Can not drop. "
         RET_DATA['alm_refill'] = " Please Refill."
+        RET_DATA['run_status'] = -1
     elif slot_no > 0 and slot_no < 11:
         try:
             serialport.open()
@@ -68,20 +69,23 @@ def dropgoods( equipment_no , goods_count):
             #data1=str((int(data,16)-1000)/10)
             print(data)
             serialport.close()
+
+            RET_DATA['run_status'] = 1
         except SerialException,e:
             RET_DATA['err_no'] = 10003
             RET_DATA['run_msg'] += "An error occurred when open serial port."
             RET_DATA['err_msg'] += e.message
-
+            #RET_DATA['run_status'] = -1
         if slot_no > 7 :
             #判断需要补货，设置提示
             RET_DATA['run_msg'] += "Goods count too low. "
             RET_DATA['alm_refill'] = "Please Refill."
     else :
-        #判断需要补货，设置提示
+        # 可售货物数量出错，设置提示
         RET_DATA['err_no'] = 10000
+        RET_DATA['run_status'] = -1
         RET_DATA['err_msg'] += "DropGoods programme error. Unknown cause."
-        RET_DATA['run_msg'] += "Please Check programme and equipment."
+        RET_DATA['run_msg'] += "Please Check equipment or programme."
 
     # 把数据写入文件，当作日志，以及下次开机的初始配置
     resultFilename =  SK.getTimeStamp() + ".json"
@@ -141,6 +145,7 @@ def refill():
     # shutil.copy("templete/config.json","config/config.json")
 
     ret = SK.makeMsg(0)
+    RET_DATA['run_status'] = 0
     return ret
 
 def checkArgv(argv):

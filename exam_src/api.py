@@ -60,13 +60,15 @@ class Refill(Resource):
         #     ret = SK.makeErrMsg(10004)
         # else :
         ret = SellMachine.refill()
-        return ret,200
+        return ret,200,{'Access-Control-Allow-Origin':"*","Access-Control-Allow-Methods":'OPTIONS,HEAD,GET,POST',"Access-Control-Allow-Headers":"x-requested-with"}
 
 class Dropone(Resource):
     def get(self, machine_no):
         print "Start dropone."
-        if False:
-            error = {'error': 'Invalid Content Type'}
+
+        if False:  # TODO Confirm Content Type is Json
+            ret = SK.makeErrMsg(10004)  # Invalid Content Type
+            
             return error
         else :
             # 获取参数：售货机编号  machine_no
@@ -74,7 +76,7 @@ class Dropone(Resource):
             ret = buy(machine_no)
             print ret
 
-            return ret,200
+            return ret,200,{'Access-Control-Allow-Origin':"*","Access-Control-Allow-Methods":'OPTIONS,HEAD,GET,POST',"Access-Control-Allow-Headers":"x-requested-with"}
             #return json.dumps(ret, indent=4),200
 
 
