@@ -143,9 +143,8 @@ def refill():
 
     # 从模板目录拷贝 config.json 到 config 目录
     # shutil.copy("templete/config.json","config/config.json")
-
     ret = SK.makeMsg(0)
-    RET_DATA['run_status'] = 0
+    ret['run_status'] = 0
     return ret
 
 def checkArgv(argv):
