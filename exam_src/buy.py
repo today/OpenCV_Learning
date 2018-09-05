@@ -73,11 +73,13 @@ def dropgoods( equipment_no , goods_count):
             RET_DATA['run_status'] = 1
         except SerialException,e:
             RET_DATA['err_no'] = 10003
+            RET_DATA['run_status'] = -1
             RET_DATA['run_msg'] += "An error occurred when open serial port."
             RET_DATA['err_msg'] += e.message
             #RET_DATA['run_status'] = -1
         if slot_no > 7 :
             #判断需要补货，设置提示
+            RET_DATA['run_status'] = -1
             RET_DATA['run_msg'] += "Goods count too low. "
             RET_DATA['alm_refill'] = "Please Refill."
     else :
