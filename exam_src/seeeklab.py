@@ -80,10 +80,7 @@ MSG[10001] = ""
 MSG[10002] = ""
 MSG[10003] = ""
 MSG[10004] = "Invalid Content Type. Request must json."
-
-
-
-
+MSG[10005] = "The serial port not exist."
 
 
 

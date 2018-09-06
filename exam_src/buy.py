@@ -3,6 +3,7 @@
 
 import serial
 from serial import SerialException
+import serial.tools.list_ports
 import binascii
 import time 
 import json
@@ -26,74 +27,90 @@ def toTwoHex(num):
     return ret
 
 def dropgoods( equipment_no , goods_count):
-    init()
-
-    # 创建serial实例
-    serialport = serial.Serial()
-    serialport.port = RET_DATA['config']['equipments'][equipment_no]['port']   # example: 'COM4'
-    serialport.baudrate = 9600
-    serialport.parity = 'N'
-    serialport.bytesize = 8
-    serialport.stopbits = 1
-    serialport.timeout = 0.2
-
-    print RET_DATA
-    slots = RET_DATA["config"]["equipments"][equipment_no]["slots"]
-    slot_no = 0
-    for i in range( len(slots) ):
-        if slots[i] > 1 :
-            slot_no = i+1  # 因为出货槽编号从1开始
-            slots[i] -= 1
-            break
-    print "i= " + str(i)
-
-    #判断缺货，设置提示
-    if slot_no == 0 :
-        RET_DATA['run_msg'] += " Sold Out. Can not drop. "
-        RET_DATA['alm_refill'] = " Please Refill."
-        RET_DATA['run_status'] = -1
-    elif slot_no > 0 and slot_no < 11:
-        try:
-            serialport.open()
-            # 发送数据   
-            #s = "0B0B"
-            #起始符0xB1   货道号0x01   打开命令0x01   example:"B11001"
-            s = "B1" + toTwoHex(slot_no) + "01"
-
-            d = s.decode('hex')
-            serialport.write(d)
-            # print (d)  这里比较奇怪，在另外一台windows电脑上会报 IOError  。
-            # 接收数据  
-            str1 = serialport.read(10)
-            data= binascii.b2a_hex(str1)
-            #data1=str((int(data,16)-1000)/10)
-            print(data)
-            serialport.close()
-
-            RET_DATA['run_status'] = 1
-        except SerialException,e:
-            RET_DATA['err_no'] = 10003
-            RET_DATA['run_status'] = -1
-            RET_DATA['run_msg'] += "An error occurred when open serial port."
-            RET_DATA['err_msg'] += e.message
-            #RET_DATA['run_status'] = -1
-        if slot_no > 7 :
-            #判断需要补货，设置提示
-            RET_DATA['run_status'] = -1
-            RET_DATA['run_msg'] += "Goods count too low. "
-            RET_DATA['alm_refill'] = "Please Refill."
-    else :
-        # 可售货物数量出错，设置提示
-        RET_DATA['err_no'] = 10000
-        RET_DATA['run_status'] = -1
-        RET_DATA['err_msg'] += "DropGoods programme error. Unknown cause."
-        RET_DATA['run_msg'] += "Please Check equipment or programme."
-
-    # 把数据写入文件，当作日志，以及下次开机的初始配置
-    resultFilename =  SK.getTimeStamp() + ".json"
-    SK.saveJson("config/" + resultFilename ,RET_DATA)
     
+    if init():
+
+        # 创建serial实例
+        serialport = serial.Serial()
+        serialport.port = RET_DATA['config']['equipments'][equipment_no]['port']   # example: 'COM4'
+        serialport.baudrate = 9600
+        serialport.parity = 'N'
+        serialport.bytesize = 8
+        serialport.stopbits = 1
+        serialport.timeout = 0.2
+
+        print RET_DATA
+        slots = RET_DATA["config"]["equipments"][equipment_no]["slots"]
+        slot_no = 0
+        for i in range( len(slots) ):
+            if slots[i] > 1 :
+                slot_no = i+1  # 因为出货槽编号从1开始
+                slots[i] -= 1
+                break
+        print "i= " + str(i)
+
+        #判断缺货，设置提示
+        if slot_no == 0 :
+            RET_DATA['run_msg'] += " Sold Out. Can not drop. "
+            RET_DATA['alm_refill'] = " Please Refill."
+            RET_DATA['run_status'] = -1
+        elif slot_no > 0 and slot_no < 11:
+            try:
+                serialport.open()
+                # 发送数据   
+                #s = "0B0B"
+                #起始符0xB1   货道号0x01   打开命令0x01   example:"B11001"
+                s = "B1" + toTwoHex(slot_no) + "01"
+
+                d = s.decode('hex')
+                serialport.write(d)
+                # print (d)  这里比较奇怪，在另外一台windows电脑上会报 IOError  。
+                # 接收数据  
+                str1 = serialport.read(10)
+                data= binascii.b2a_hex(str1)
+                #data1=str((int(data,16)-1000)/10)
+                print(data)
+                serialport.close()
+
+                RET_DATA['run_status'] = 1
+            except SerialException,e:
+                RET_DATA['err_no'] = 10003
+                RET_DATA['run_status'] = -1
+                RET_DATA['run_msg'] += "An error occurred when open serial port."
+                RET_DATA['err_msg'] += e.message
+                #RET_DATA['run_status'] = -1
+            if slot_no > 7 :
+                #判断需要补货，设置提示
+                RET_DATA['run_status'] = -1
+                RET_DATA['run_msg'] += "Goods count too low. "
+                RET_DATA['alm_refill'] = "Please Refill."
+        else :
+            # 可售货物数量出错，设置提示
+            RET_DATA['err_no'] = 10000
+            RET_DATA['run_status'] = -1
+            RET_DATA['err_msg'] += "DropGoods programme error. Unknown cause."
+            RET_DATA['run_msg'] += "Please Check equipment or programme."
+
+        # 把数据写入文件，当作日志，以及下次开机的初始配置
+        resultFilename =  SK.getTimeStamp() + ".json"
+        SK.saveJson("config/" + resultFilename ,RET_DATA)
+    else:
+        RET_DATA['run_status'] = -1
+        RET_DATA['run_msg'] += "Init fail."
     return RET_DATA  
+
+
+def getSerial():
+    port_list = list(serial.tools.list_ports.comports())
+    if len(port_list) <= 0:
+        print "The Serial port can't find!"
+        return False,'COM0'
+    else:
+        for p in port_list:
+            if 'USB' in p.description:
+                return True, p.device
+            
+    return False,'COM0'
 
 
 def checkSerial():
@@ -123,16 +140,24 @@ def init():
         print traceback.format_exc()
     
     # 检查所有配置文件中定义的串口是否能正常工作。
-    check_ok = check_ok and checkSerial()
+    normal_flag,serial_name = getSerial()
+    if normal_flag:
+        RET_DATA["config"]["equipments"]['a']["port"] = serial_name
+    else:
+        RET_DATA['err_no'] = 10005
+        RET_DATA['run_status'] = -1
+        RET_DATA['err_msg'] += "The serial port not exist."
+
+    check_ok = check_ok and normal_flag
     
     if check_ok :
         # 通过开机检测，设置要回送的数据。
         RET_DATA['run_msg'] += "Initial OK. "
-        return 0
+        return True
     else:
         
         # 返回数据。
-        return -1
+        return False
     
 
 def refill():
