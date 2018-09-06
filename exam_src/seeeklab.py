@@ -7,7 +7,7 @@ import glob
 from datetime import datetime
 
 def getReturnValTemp():
-    return {'err_no': 0,'err_msg':"","run_status":-1,"run_msg":"","data":{}}
+    return {'err_no': 0,'err_msg':"","run_status":0,"run_msg":"","data":{}}
 
 # Writing JSON data
 def saveJson(filename, data ):
@@ -30,7 +30,7 @@ def makeMsg(id, msgtext=''):
     ret = getReturnValTemp()
     # 根据 id 取到 msg 对象
     ret['run_msg'] += MSG[id]
-    ret['run_status'] = -1
+    ret['run_status'] = 0
     
     # 检查是否 id 和 text 不匹配
     return ret

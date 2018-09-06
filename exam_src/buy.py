@@ -53,7 +53,7 @@ def dropgoods( equipment_no , goods_count):
         if slot_no == 0 :
             RET_DATA['run_msg'] += " Sold Out. Can not drop. "
             RET_DATA['alm_refill'] = " Please Refill."
-            RET_DATA['run_status'] = -1
+            RET_DATA['run_status'] = -10001
         elif slot_no > 0 and slot_no < 11:
             try:
                 serialport.open()
@@ -75,19 +75,18 @@ def dropgoods( equipment_no , goods_count):
                 RET_DATA['run_status'] = 1
             except SerialException,e:
                 RET_DATA['err_no'] = 10003
-                RET_DATA['run_status'] = -1
+                RET_DATA['run_status'] = -10002
                 RET_DATA['run_msg'] += "An error occurred when open serial port."
                 RET_DATA['err_msg'] += e.message
-                #RET_DATA['run_status'] = -1
             if slot_no > 7 :
                 #判断需要补货，设置提示
-                RET_DATA['run_status'] = -1
+                RET_DATA['run_status'] = -10003
                 RET_DATA['run_msg'] += "Goods count too low. "
                 RET_DATA['alm_refill'] = "Please Refill."
         else :
             # 可售货物数量出错，设置提示
             RET_DATA['err_no'] = 10000
-            RET_DATA['run_status'] = -1
+            RET_DATA['run_status'] = -10004
             RET_DATA['err_msg'] += "DropGoods programme error. Unknown cause."
             RET_DATA['run_msg'] += "Please Check equipment or programme."
 
@@ -95,7 +94,7 @@ def dropgoods( equipment_no , goods_count):
         resultFilename =  SK.getTimeStamp() + ".json"
         SK.saveJson("config/" + resultFilename ,RET_DATA)
     else:
-        RET_DATA['run_status'] = -1
+        RET_DATA['run_status'] = -10005
         RET_DATA['run_msg'] += "Init fail."
     return RET_DATA  
 
@@ -137,7 +136,7 @@ def init():
         RET_DATA['run_msg'] += "An error occurred when open config file."
         RET_DATA['err_msg'] += e.message
         check_ok = False
-        print traceback.format_exc()
+        #print traceback.format_exc()
     
     # 检查所有配置文件中定义的串口是否能正常工作。
     normal_flag,serial_name = getSerial()
@@ -145,7 +144,7 @@ def init():
         RET_DATA["config"]["equipments"]['a']["port"] = serial_name
     else:
         RET_DATA['err_no'] = 10005
-        RET_DATA['run_status'] = -1
+        RET_DATA['run_status'] = -10006
         RET_DATA['err_msg'] += "The serial port not exist."
 
     check_ok = check_ok and normal_flag
@@ -171,7 +170,7 @@ def refill():
     # 从模板目录拷贝 config.json 到 config 目录
     # shutil.copy("templete/config.json","config/config.json")
     ret = SK.makeMsg(0)
-    ret['run_status'] = 0
+    ret['run_status'] = 1
     return ret
 
 def checkArgv(argv):
@@ -205,7 +204,7 @@ def main(argv):
 
     dropgoods(equipment, goods_count)
 
-    print RET_DATA
+    #print RET_DATA
    
    
 

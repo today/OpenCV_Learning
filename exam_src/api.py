@@ -34,7 +34,7 @@ class Steps(Resource):
             STEPS['count'] = len(STEPS['datas'])
             #ret.append(  )
         print(STEPS["count"])   
-        print(ret)  
+        #print(ret)  
         # response.headers['Access-Control-Allow-Origin'] = '*'
         # response.headers['Access-Control-Allow-Methods'] = 'OPTIONS,HEAD,GET,POST'
         # response.headers['Access-Control-Allow-Headers'] = 'x-requested-with'    
